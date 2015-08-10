@@ -88,3 +88,23 @@ exports.edit = function(req, res) {
     var quiz = req.quiz;
     res.render('quizes/edit', {quiz: quiz, errors: []});
 };
+
+// PUT /quizes/:id
+exports.update = function(req, res) {
+    req.quiz.pregunta = req.body.quiz.pregunta;
+    req.quiz.respuesta = req.body.quiz.respuesta;
+    req.quiz.tema = req.body.quiz.tema;
+    
+    var errors = req.quiz.validate();
+    if (errors) {
+        //se convierte en [] con la propiedad message por compatibilida con layout
+        var i=0; var errores=new Array();
+        for (var prop in errors) errores[i++]={message: errors[prop]}; 
+        res.render('quizes/edit', {quiz: req.quiz, errors: errores});
+    } else {
+        req.quiz.save({fields: ["pregunta", "respuesta", "tema"]})
+        .then(function() {
+            res.redirect('/quizes');
+        });
+    }
+};
