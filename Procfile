@@ -1,1 +1,1 @@
-web: /home/rothgar/Programas/node/node-v0.10.9-linux-x64/bin/node ./bin/www
+web: node ./bin/www
