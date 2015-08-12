@@ -27,6 +27,25 @@ app.use(session());
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+// MW de control de sesion
+app.use(function(req, res, next) {
+    console.log('Control de sesion: ' + req.session.user);
+    if (req.session.user) {
+        var now = Date.now();
+        var lastTime = req.session.lastTime || now;
+        var miliseconds = 120000;
+        console.log(now + ' ' + lastTime + ' ' + (now - lastTime));
+        if (now - lastTime > miliseconds) {
+            delete req.session.lastTime;
+            delete req.session.user;
+        } else {
+            req.session.lastTime = now;
+        }
+    }
+    next();
+});
+
 // Helpers dinamicos:
 app.use(function(req, res, next) {
     // guardar path en session.redir para despues de login
@@ -73,6 +92,5 @@ app.use(function(err, req, res, next) {
         errors: []
     });
 });
-
 
 module.exports = app;
