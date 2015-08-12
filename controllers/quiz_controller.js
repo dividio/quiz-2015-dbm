@@ -113,8 +113,39 @@ exports.update = function(req, res) {
 };
 
 // DELETE /quizes/:id
-exports.destroy = function(req, res) {
+exports.destroy = function(req, res, next) {
     req.quiz.destroy().then( function() {
         res.redirect('/quizes');
     }).catch(function(error) {next(error);});
+};
+
+// GET /quizes/statistics
+exports.statistics = function(req, res, next) {
+    var stats = {};
+    models.Quiz.count()
+    .then(function(count) {
+        stats.totalQuizes = count;
+    })
+    .then(function() {
+        return models.Comment.count()
+    })
+    .then(function(count) {
+        stats.totalComments = count;
+        stats.media = stats.totalComments / stats.totalQuizes;
+    })
+    .then(function() {
+        return models.Comment.findAll(
+            {
+                attributes: ['QuizId'],
+                group: ['QuizId']
+            })
+    })
+    .then(function(results) {
+        stats.totalQuizesComments = results.length;
+        stats.totalQuizesWithoutComments = stats.totalQuizes - stats.totalQuizesComments;
+    })
+    .then(function() {
+        res.render('quizes/statistics', {stats: stats, errors: []});
+    })
+    .catch(function(error) {next(error);});
 };
